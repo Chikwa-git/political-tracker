@@ -1,3 +1,9 @@
+# analysis.py
+# NOTE: This file was initially generated with the assistance of Claude (Anthropic)
+# as part of the CS50X final project development process.
+# The logic was reviewed, studied and understood by the author.
+# Reference: https://claude.ai
+
 import camara
 
 
@@ -10,29 +16,29 @@ def get_congressman_history(congressman_id):
 
     history = []
 
-    # Busca as 100 votações recentes da Câmara
+    # Fetch the 100 recent votes from the Chamber
     recent_votes = camara.get_recent_votes()
 
     for vote in recent_votes:
-        # Busca os votos individuais de cada votação
+        # Fetch individual votes for each vote session
         vote_details = camara.get_vote_details(vote["id"])
 
-        # Percorre os votos da votação procurando o deputado
-        # O "for/else" do Python funciona assim:
-        # - Se o loop terminar com "break" → o "else" NÃO executa
-        # - Se o loop terminar naturalmente → o "else" executa
+        # Iterate through votes looking for the congressman
+        # Python's "for/else" works like this:
+        # - If the loop ends with "break" → the "else" does NOT execute
+        # - If the loop ends naturally → the "else" executes
         for voto in vote_details:
             if voto["deputado_"]["id"] == congressman_id:
-                # Deputado encontrado → registra o voto dele
+                # Congressman found → record his/her vote
                 history.append({
                     "vote_id": vote["id"],
                     "description": vote["descricao"],
                     "date": vote["data"],
                     "vote": voto["tipoVoto"]  # "Sim", "Não", "Abstenção", "Obstrução"
                 })
-                break  # Para o loop interno — já encontrou o deputado
+                break  # Break the inner loop — already found the congressman
         else:
-            # Deputado não encontrado em nenhum voto → estava ausente
+            # Congressman not found in any vote → was absent
             history.append({
                 "vote_id": vote["id"],
                 "description": vote["descricao"],
@@ -56,11 +62,11 @@ def get_presence_rate(history):
     if total == 0:
         return 0
 
-    # Conta quantas votações o deputado NÃO foi ausente
+    # Count how many votes the congressman was NOT absent
     present = sum(1 for item in history if item["vote"] != "Ausente")
 
-    # Calcula a porcentagem
-    # Ex: 87 presentes / 100 total * 100 = 87.0%
+    # Calculate the percentage
+    # Ex: 87 present / 100 total * 100 = 87.0%
     return round((present / total) * 100, 1)
 
 
@@ -75,8 +81,8 @@ def get_party_alignment(congressman_id, party):
     - If the party "liberated" the vote (empty orientation), that vote is ignored
     """
 
-    aligned = 0      # votações onde o deputado seguiu o partido
-    total = 0        # total de votações comparáveis (exclui ausências e bancada liberada)
+    aligned = 0      # votes where the congressman followed the party
+    total = 0        # total comparable votes (excludes absences and released votes)
 
     recent_votes = camara.get_recent_votes()
 
@@ -84,30 +90,30 @@ def get_party_alignment(congressman_id, party):
         vote_details = camara.get_vote_details(vote["id"])
         orientations = camara.get_vote_orientation(vote["id"])
 
-        # Passo 1 — encontrar o voto do deputado nessa votação
+        # Step 1 — find the congressman's vote in this session
         congressman_vote = None
         for voto in vote_details:
             if voto["deputado_"]["id"] == congressman_id:
                 congressman_vote = voto["tipoVoto"]
                 break
 
-        # Se o deputado estava ausente, não conta para o alinhamento
+        # If the congressman was absent, it doesn't count for alignment
         if congressman_vote is None:
             continue
 
-        # Passo 2 — encontrar a orientação do partido do deputado
-        # O campo codTipoLideranca = "P" significa que é um partido (não bloco)
+        # Step 2 — find the orientation of the congressman's party
+        # The field codTipoLideranca = "P" means it's a party (not a bloc)
         party_orientation = None
         for orientation in orientations:
             if orientation["siglaPartidoBloco"] == party and orientation["codTipoLideranca"] == "P":
                 party_orientation = orientation["orientacaoVoto"]
                 break
 
-        # Se o partido liberou a bancada (orientação vazia) ou não orientou, ignora essa votação
+        # If the party liberated the group (empty orientation) or didn't guide, ignore this vote
         if not party_orientation:
             continue
 
-        # Passo 3 — comparar o voto do deputado com a orientação do partido
+        # Step 3 — compare the congressman's vote with the party orientation
         total += 1
         if congressman_vote == party_orientation:
             aligned += 1
@@ -130,8 +136,8 @@ def get_political_alignment(congressman_id):
     }
     """
 
-    # Dicionário que vai acumular os votos em comum entre os deputados
-    # Estrutura: { congressman_id: { "same": 0, "total": 0, "name": "...", "party": "..." } }
+    # Dictionary that will accumulate common votes between congressmen
+    # Structure: { congressman_id: { "same": 0, "total": 0, "name": "...", "party": "..." } }
     comparisons = {}
 
     recent_votes = camara.get_recent_votes()
@@ -139,33 +145,33 @@ def get_political_alignment(congressman_id):
     for vote in recent_votes:
         vote_details = camara.get_vote_details(vote["id"])
 
-        # Passo 1 — encontrar o voto do deputado principal
+        # Step 1 — find the main congressman's vote
         congressman_vote = None
         for voto in vote_details:
             if voto["deputado_"]["id"] == congressman_id:
                 congressman_vote = voto["tipoVoto"]
                 break
 
-        # Se estava ausente, pula essa votação
+        # If was absent, skip this vote
         if congressman_vote is None:
             continue
 
-        # Passo 2 — comparar com todos os outros deputados que votaram
+        # Step 2 — compare with all other congressmen who voted
         for voto in vote_details:
             other_id = voto["deputado_"]["id"]
 
-            # Não compara consigo mesmo
+            # Don't compare with himself
             if other_id == congressman_id:
                 continue
 
-            # Inicializa o registro do deputado se ainda não existe
+            # Initialize the congressman's record if it doesn't exist yet
             if other_id not in comparisons:
                 comparisons[other_id] = {
                     "id": other_id,
                     "name": voto["deputado_"]["nome"],
                     "party": voto["deputado_"]["siglaPartido"],
-                    "same": 0,    # votações iguais
-                    "total": 0    # total de votações em comum
+                    "same": 0,    # same votes
+                    "total": 0    # total votes in common
                 }
 
             comparisons[other_id]["total"] += 1
@@ -173,11 +179,11 @@ def get_political_alignment(congressman_id):
             if voto["tipoVoto"] == congressman_vote:
                 comparisons[other_id]["same"] += 1
 
-    # Passo 3 — calcular o % de alinhamento de cada deputado
+    # Step 3 — calculate alignment % for each congressman
     alignments = []
     for other_id, data in comparisons.items():
-        # Só considera deputados com pelo menos 10 votações em comum
-        # Evita distorções por poucos dados
+        # Only consider congressmen with at least 10 votes in common
+        # Avoids distortions from insufficient data
         if data["total"] < 10:
             continue
 
@@ -189,11 +195,11 @@ def get_political_alignment(congressman_id):
             "alignment": alignment
         })
 
-    # Passo 4 — ordenar e pegar top 5 de cada extremo
-    # sorted() com reverse=True → do maior pro menor
+    # Step 4 — sort and get top 5 from each extreme
+    # sorted() with reverse=True → from largest to smallest
     alignments.sort(key=lambda x: x["alignment"], reverse=True)
 
     return {
-        "most_aligned": alignments[:5],     # top 5 que mais votam igual
-        "least_aligned": alignments[-5:]    # top 5 que mais votam diferente
+        "most_aligned": alignments[:5],     # top 5 who vote the same
+        "least_aligned": alignments[-5:]    # top 5 who vote differently
     }
