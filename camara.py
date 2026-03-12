@@ -42,7 +42,8 @@ def get_recent_votes():
 
 
 def get_vote_details(vote_id):
-    """This function receives the id of a vote and returns the details of it"""
+    """Returns a list of all votes registered for a specific voting session.
+    Note: absent congressmen are not listed."""
 
     response = requests.get(f"{BASE_URL}/votacoes/{vote_id}/votos")
 

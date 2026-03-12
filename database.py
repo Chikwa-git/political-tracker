@@ -44,20 +44,27 @@ def get_cache(key):
         
 
 def is_valid_cache(key, hours):
-    """This function checks if the cache is valid"""
+    """This function checks if the cache is valid based on time"""
 
     with conn:
+        # Retrieve the timestamp of the cache entry using the provided key
         cursor = conn.execute("""
             SELECT timestamp FROM cache WHERE key = ?
         """, (key,))
         row = cursor.fetchone()
 
+        # If no entry exists in the database, the cache is invalid
         if row is None:
             return False
 
+        # Convert the stored timestamp (string) to a datetime object
         saved_time = datetime.datetime.fromisoformat(row[0])
+        # Get the current date and time
         now = datetime.datetime.now()
+        # Calculate the time difference between now and when it was saved
         difference = now - saved_time
+        # Define the maximum time limit that the cache can have (in hours)
         limit = datetime.timedelta(hours=hours)
 
+        # Return True if the cache is still "fresh" (more recent than the limit)
         return difference < limit
