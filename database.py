@@ -3,7 +3,7 @@ import json
 import sqlite3
 
 
-conn = sqlite3.connect("cache.db")
+conn = sqlite3.connect("cache.db", check_same_thread=False)
 
 
 def init_db():

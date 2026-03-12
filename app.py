@@ -1,11 +1,35 @@
 """Flask routes for searching and displaying congressman data."""
 
-import analysis
 import camara
 import database
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
+
+
+def _normalize_deputy_data(raw_data):
+    """Return deputy data in the flat format expected by deputy.html."""
+
+    if not raw_data:
+        return None
+
+    # Already normalized format (new cache schema).
+    if "nome" in raw_data and "siglaPartido" in raw_data:
+        return raw_data
+
+    # Legacy/full API format where relevant fields are under ultimoStatus.
+    status = raw_data.get("ultimoStatus", {})
+    gabinete = status.get("gabinete", {})
+
+    return {
+        "id": raw_data.get("id"),
+        "nome": status.get("nome"),
+        "siglaPartido": status.get("siglaPartido"),
+        "siglaUf": status.get("siglaUf"),
+        "urlFoto": status.get("urlFoto"),
+        "email": gabinete.get("email"),
+        "idLegislatura": status.get("idLegislatura"),
+    }
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -35,7 +59,7 @@ def deputy():
     if request.method == "GET":
         # Deputy ID is expected in the URL query string: /deputy?id=<id>
         congressman_id = request.args.get("id")
-        
+
         if not congressman_id:
             # Guard clause: redirect to home if no ID is provided.
             return redirect(url_for("index"))
@@ -45,12 +69,16 @@ def deputy():
 
         # Use cached deputy data when fresh; otherwise fetch and update cache.
         if database.is_valid_cache(cache_key, cache_hours):
-            deputy_data = database.get_cache(cache_key)
+            deputy_flat = _normalize_deputy_data(database.get_cache(cache_key))
         else:
             deputy_data = camara.get_congressman(congressman_id)
-            database.save_cache(cache_key, deputy_data)
+            deputy_flat = _normalize_deputy_data(deputy_data)
+            database.save_cache(cache_key, deputy_flat)
 
-        return render_template("deputy.html", deputy=deputy_data)
+        if not deputy_flat:
+            return redirect(url_for("index"))
+
+        return render_template("deputy.html", deputy=deputy_flat)
 
     return redirect(url_for("index"))
 

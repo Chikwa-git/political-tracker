@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ deputy.nome }} · Radar Político</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --surface-2: #161616;
+            --border: #222222;
+            --accent: #00ff87;
+            --accent-dim: rgba(0, 255, 135, 0.08);
+            --accent-mid: rgba(0, 255, 135, 0.3);
+            --text: #e8e8e8;
+            --text-muted: #666666;
+            --text-dim: #333333;
+            --yes: #00ff87;
+            --no: #ff3b3b;
+            --abstain: #ffaa00;
+            --absent: #444444;
+        }
+
+        html, body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'IBM Plex Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .wrapper { position: relative; z-index: 1; min-height: 100vh; }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+            background: rgba(10,10,10,0.85);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 0.1em;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .header-search {
+            display: flex;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            transition: border-color 0.2s;
+        }
+
+        .header-search:focus-within { border-color: var(--accent); }
+
+        .header-search input {
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0.6rem 1rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text);
+            width: 220px;
+        }
+
+        .header-search input::placeholder { color: var(--text-dim); }
+
+        .header-search button {
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--border);
+            padding: 0.6rem 1rem;
+            color: var(--accent);
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            transition: background 0.15s;
+        }
+
+        .header-search button:hover { background: var(--accent-dim); }
+
+        .deputy-hero {
+            border-bottom: 1px solid var(--border);
+            padding: 3rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 2.5rem;
+            align-items: center;
+            background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .deputy-photo-wrap {
+            position: relative;
+        }
+
+        .deputy-photo {
+            object-fit: cover;
+            object-position: top center;
+        }
+
+        /* Decidir depois se será necessário. */
+        /* .deputy-photo-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid var(--accent);
+            transform: translate(6px, 6px);
+            pointer-events: none;
+            z-index: 1;
+        } */
+
+        .deputy-party-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .deputy-party-badge::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        .deputy-fullname {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            line-height: 0.95;
+            letter-spacing: 0.02em;
+            color: var(--text);
+            margin-bottom: 1.2rem;
+        }
+
+        .deputy-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        .tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            padding: 0.25rem 0.6rem;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .deputy-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: right;
+        }
+
+        .stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            line-height: 1;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            animation: fadeUp 0.4s ease 0.1s both;
+        }
+
+        .main-col { border-right: 1px solid var(--border); }
+
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+        }
+
+        .section-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .section-count {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .vote-item {
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 3px 1fr auto;
+            gap: 1.2rem;
+            align-items: center;
+            transition: background 0.15s;
+            animation: fadeUp 0.3s ease both;
+        }
+
+        .vote-item:hover { background: var(--surface-2); }
+
+        .vote-bar { width: 3px; min-height: 36px; }
+        .vote-bar.sim       { background: var(--yes); }
+        .vote-bar.nao       { background: var(--no); }
+        .vote-bar.abstencao { background: var(--abstain); }
+        .vote-bar.ausente   { background: var(--absent); }
+        .vote-bar.obstrucao { background: var(--abstain); }
+
+        .vote-desc {
+            font-size: 0.82rem;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 0.3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .vote-date {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .vote-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.7rem;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+
+        .vote-badge.sim       { color: var(--yes);     border-color: rgba(0,255,135,0.3);  background: rgba(0,255,135,0.05); }
+        .vote-badge.nao       { color: var(--no);      border-color: rgba(255,59,59,0.3);  background: rgba(255,59,59,0.05); }
+        .vote-badge.abstencao { color: var(--abstain); border-color: rgba(255,170,0,0.3);  background: rgba(255,170,0,0.05); }
+        .vote-badge.ausente   { color: var(--absent);  border-color: #333; }
+        .vote-badge.obstrucao { color: var(--abstain); border-color: rgba(255,170,0,0.3);  background: rgba(255,170,0,0.05); }
+
+        .alignment-block {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .alignment-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
+
+        .alignment-row { margin-bottom: 1rem; }
+
+        .alignment-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+
+        .alignment-name { font-size: 0.8rem; color: var(--text); }
+
+        .alignment-pct {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .bar-track { height: 3px; background: var(--border); }
+        .bar-fill  { height: 3px; background: var(--accent); transition: width 1s ease; }
+        .bar-fill.low { background: var(--no); }
+        .bar-fill.mid { background: var(--abstain); }
+
+        .prop-item {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        .prop-item:hover { background: var(--surface-2); }
+
+        .prop-status {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .prop-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+        }
+
+        .prop-status.aprovada  { color: var(--yes); }
+        .prop-status.aprovada::before  { background: var(--yes); }
+        .prop-status.rejeitada { color: var(--no); }
+        .prop-status.rejeitada::before { background: var(--no); }
+        .prop-status.tramitacao { color: var(--abstain); }
+        .prop-status.tramitacao::before { background: var(--abstain); }
+
+        .prop-ementa {
+            font-size: 0.78rem;
+            color: var(--text);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .prop-tipo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+
+        .placeholder {
+            padding: 3rem 2rem;
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        {% for i in range(50) %}
+        .vote-item:nth-child({{ i + 1 }}) { animation-delay: {{ i * 0.02 }}s; }
+        {% endfor %}
+
+        @media (max-width: 900px) {
+            .content { grid-template-columns: 1fr; }
+            .main-col { border-right: none; }
+            .deputy-hero { grid-template-columns: auto 1fr; }
+            .deputy-stats { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 1rem 1.5rem; }
+            .header-search { display: none; }
+            .deputy-hero { padding: 2rem 1.5rem; gap: 1.5rem; }
+            .deputy-photo { width: 80px; height: 95px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <header>
+        <a href="/" class="logo">Radar<span>Político</span></a>
+        <form class="header-search" method="POST" action="/deputy">
+            <input type="text" name="name" placeholder="Buscar outro deputado..." autocomplete="off">
+            <button type="submit">→</button>
+        </form>
+    </header>
+
+    <section class="deputy-hero">
+        <div class="deputy-photo-wrap">
+            <img class="deputy-photo" src="{{ deputy.urlFoto }}" alt="{{ deputy.nome }}" onerror="this.style.opacity='0'">
+        </div>
+
+        <div class="deputy-identity">
+            <div class="deputy-party-badge">Partido: {{ deputy.siglaPartido }} · Estado: {{ deputy.siglaUf }}</div>
+            <h1 class="deputy-fullname">{{ deputy.nome }}</h1>
+            <div class="deputy-tags">
+                <span class="tag">{{ deputy.siglaUf }}</span>
+                <span class="tag">Legislatura {{ deputy.idLegislatura }}</span>
+                <span class="tag">EMAIL: {{ deputy.email }}</span>
+            </div>
+        </div>
+
+        <div class="deputy-stats">
+            <div>
+                <div class="stat-value">—</div>
+                <div class="stat-label">% Presença</div>
+            </div>
+            <div>
+                <div class="stat-value">—</div>
+                <div class="stat-label">% Alinhamento</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="content">
+
+        <!-- HISTÓRICO DE VOTAÇÕES -->
+        <div class="main-col">
+            <div class="section-header">
+                <span class="section-title">Histórico de votações</span>
+                {% if history is defined %}
+                <span class="section-count">{{ history | length }}</span>
+                {% endif %}
+            </div>
+
+            {% if history is defined and history %}
+                {% for item in history %}
+                <div class="vote-item">
+                    <div class="vote-bar {{ item.vote | lower | replace('ã','a') | replace('ç','c') | replace('é','e') }}"></div>
+                    <div>
+                        <div class="vote-desc">{{ item.description }}</div>
+                        <div class="vote-date">{{ item.date }}</div>
+                    </div>
+                    <span class="vote-badge {{ item.vote | lower | replace('ã','a') | replace('ç','c') | replace('é','e') }}">
+                        {{ item.vote }}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="placeholder">Histórico disponível após integração com analysis.py</div>
+            {% endif %}
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside>
+
+            <!-- ALINHAMENTO COM PARTIDO -->
+            <div class="alignment-block">
+                <div class="alignment-title">Alinhamento com {{ deputy.siglaPartido }}</div>
+                {% if party_alignment is defined %}
+                <div class="alignment-row">
+                    <div class="alignment-label">
+                        <span class="alignment-name">{{ deputy.siglaPartido }}</span>
+                        <span class="alignment-pct">{{ party_alignment }}%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill {% if party_alignment < 40 %}low{% elif party_alignment < 70 %}mid{% endif %}"
+                             style="width: {{ party_alignment }}%"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="placeholder">Disponível após integração</div>
+                {% endif %}
+            </div>
+
+            <!-- TOP 5 MAIS ALINHADOS -->
+            <div class="alignment-block">
+                <div class="alignment-title">Top 5 — votam mais igual</div>
+                {% if political_alignment is defined and political_alignment.most_aligned %}
+                    {% for dep in political_alignment.most_aligned %}
+                    <div class="alignment-row">
+                        <div class="alignment-label">
+                            <span class="alignment-name">{{ dep.name }}</span>
+                            <span class="alignment-pct">{{ dep.alignment }}%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: {{ dep.alignment }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="placeholder">Disponível após integração</div>
+                {% endif %}
+            </div>
+
+            <!-- TOP 5 MENOS ALINHADOS -->
+            <div class="alignment-block">
+                <div class="alignment-title">Top 5 — votam mais diferente</div>
+                {% if political_alignment is defined and political_alignment.least_aligned %}
+                    {% for dep in political_alignment.least_aligned %}
+                    <div class="alignment-row">
+                        <div class="alignment-label">
+                            <span class="alignment-name">{{ dep.name }}</span>
+                            <span class="alignment-pct">{{ dep.alignment }}%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill low" style="width: {{ dep.alignment }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="placeholder">Disponível após integração</div>
+                {% endif %}
+            </div>
+
+            <!-- PROJETOS APRESENTADOS -->
+            <div class="section-header">
+                <span class="section-title">Projetos apresentados</span>
+                {% if propositions is defined %}
+                <span class="section-count">{{ propositions | length }}</span>
+                {% endif %}
+            </div>
+
+            {% if propositions is defined and propositions %}
+                {% for prop in propositions %}
+                <div class="prop-item">
+                    <div class="prop-status {{ prop.status }}">{{ prop.status | capitalize }}</div>
+                    <div class="prop-ementa">{{ prop.ementa }}</div>
+                    <div class="prop-tipo">{{ prop.siglaTipo }} · {{ prop.ano }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="placeholder">Disponível após integração</div>
+            {% endif %}
+
+        </aside>
+    </div>
+
+</div>
+</body>
+</html>
