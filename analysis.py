@@ -23,6 +23,9 @@ def get_congressman_history(congressman_id):
         # Fetch individual votes for each vote session
         vote_details = camara.get_vote_details(vote["id"])
 
+        if len(vote_details) < 50:
+            continue
+
         # Iterate through votes looking for the congressman
         # Python's "for/else" works like this:
         # - If the loop ends with "break" → the "else" does NOT execute
@@ -70,52 +73,47 @@ def get_presence_rate(history):
     return round((present / total) * 100, 1)
 
 
-def get_party_alignment(congressman_id, party):
+def get_majority_alignment(congressman_id):
     """
-    Calculates the alignment percentage of a congressman with their party.
+    Calculates the alignment percentage of a congressman with the Chamber majority.
     Returns a float between 0 and 100.
-
-    - Fetches recent votes
-    - For each vote, checks the party orientation
-    - Compares with the congressman's vote
-    - If the party "liberated" the vote (empty orientation), that vote is ignored
+    More reliable than party alignment since "Maioria" always appears in orientations.
     """
 
-    aligned = 0      # votes where the congressman followed the party
-    total = 0        # total comparable votes (excludes absences and released votes)
+    aligned = 0
+    total = 0
 
     recent_votes = camara.get_recent_votes()
 
     for vote in recent_votes:
         vote_details = camara.get_vote_details(vote["id"])
+        if len(vote_details) < 50:
+            continue
+
         orientations = camara.get_vote_orientation(vote["id"])
 
-        # Step 1 — find the congressman's vote in this session
+        # Find the congressman's vote
         congressman_vote = None
         for voto in vote_details:
             if voto["deputado_"]["id"] == congressman_id:
                 congressman_vote = voto["tipoVoto"]
                 break
 
-        # If the congressman was absent, it doesn't count for alignment
-        if congressman_vote is None:
+        if not congressman_vote:
             continue
 
-        # Step 2 — find the orientation of the congressman's party
-        # The field codTipoLideranca = "P" means it's a party (not a bloc)
-        party_orientation = None
-        for orientation in orientations:
-            if orientation["siglaPartidoBloco"] == party and orientation["codTipoLideranca"] == "P":
-                party_orientation = orientation["orientacaoVoto"]
+        # Find the majority orientation
+        majority_orientation = None
+        for o in orientations:
+            if o["siglaPartidoBloco"] == "Maioria" and o["orientacaoVoto"]:
+                majority_orientation = o["orientacaoVoto"]
                 break
 
-        # If the party liberated the group (empty orientation) or didn't guide, ignore this vote
-        if not party_orientation:
+        if not majority_orientation:
             continue
 
-        # Step 3 — compare the congressman's vote with the party orientation
         total += 1
-        if congressman_vote == party_orientation:
+        if congressman_vote == majority_orientation:
             aligned += 1
 
     if total == 0:

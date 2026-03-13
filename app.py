@@ -1,5 +1,6 @@
 """Flask routes for searching and displaying congressman data."""
 
+import analysis
 import camara
 import database
 from flask import Flask, render_template, request, redirect, url_for
@@ -77,8 +78,32 @@ def deputy():
 
         if not deputy_flat:
             return redirect(url_for("index"))
+                
+        congressman_id_int = int(congressman_id)
 
-        return render_template("deputy.html", deputy=deputy_flat)
+        # Use cached analysis data when fresh; otherwise compute and cache.
+        if database.is_valid_cache(f"history_{congressman_id}", hours=24):
+            history = database.get_cache(f"history_{congressman_id}")
+            presence = database.get_cache(f"presence_{congressman_id}")
+            majority_alignment = database.get_cache(f"majority_{congressman_id}")
+            political_alignment = database.get_cache(f"political_{congressman_id}")
+        else:
+            history = analysis.get_congressman_history(congressman_id_int)
+            presence = analysis.get_presence_rate(history)
+            majority_alignment = analysis.get_majority_alignment(congressman_id_int)
+            political_alignment = analysis.get_political_alignment(congressman_id_int)
+
+            database.save_cache(f"history_{congressman_id}", history)
+            database.save_cache(f"presence_{congressman_id}", presence)
+            database.save_cache(f"majority_{congressman_id}", majority_alignment)
+            database.save_cache(f"political_{congressman_id}", political_alignment)
+
+        return render_template("deputy.html", 
+            deputy=deputy_flat,
+            history=history,
+            presence=presence,
+            majority_alignment=majority_alignment,
+            political_alignment=political_alignment)
 
     return redirect(url_for("index"))
 

@@ -28,17 +28,30 @@ def get_congressman(congressman_id):
 
 
 def get_recent_votes():
-    """This function returns the 100 recent votes by the Chamber"""
-
-    response = requests.get(f"{BASE_URL}/votacoes", params={
-        "itens": 100,
-        "ordem": "DESC",
-        "ordenarPor": "dataHoraRegistro"
-    })
-
-    votes = response.json()
-
-    return votes["dados"]
+    """Fetches recent Plenario votes with nominal voting records."""
+    
+    all_plen_votes = []
+    page = 1
+    
+    while len(all_plen_votes) < 200 and page <= 20:
+        response = requests.get(f"{BASE_URL}/votacoes", params={
+            "itens": 100,
+            "ordem": "DESC",
+            "ordenarPor": "dataHoraRegistro",
+            "pagina": page,
+            "dataInicio": "2025-01-01"
+        })
+        
+        data = response.json()
+        
+        if not data.get("dados"):
+            break
+            
+        plen = [v for v in data["dados"] if v["siglaOrgao"] == "PLEN"]
+        all_plen_votes.extend(plen)
+        page += 1
+        
+    return all_plen_votes[:50]
 
 
 def get_vote_details(vote_id):
@@ -86,22 +99,3 @@ def get_vote_orientation(vote_id):
 
     return vote_orientation["dados"]
 
-
-def get_blocks():
-    """This function returns the blocks of the Chamber"""
-
-    response = requests.get(f"{BASE_URL}/blocos")
-
-    blocks = response.json()
-
-    return blocks["dados"]
-
-
-def get_block_parties(block_id):
-    """This function returns the parties of the blocks of the Chamber"""
-
-    response = requests.get(f"{BASE_URL}/blocos/{block_id}/partidos")
-
-    block_parties = response.json()
-
-    return block_parties["dados"]

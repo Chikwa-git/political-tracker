@@ -433,11 +433,12 @@
 
         <div class="deputy-stats">
             <div>
-                <div class="stat-value">—</div>
+                <div class="stat-value">{% if presence is defined %}{{ presence }}%{% else %}—{% endif %}</div>
                 <div class="stat-label">% Presença</div>
             </div>
             <div>
-                <div class="stat-value">—</div>
+                <div class="stat-value">{% if party_alignment is defined %}{{ party_alignment }}%{% else %}—{% endif %}
+            </div>
                 <div class="stat-label">% Alinhamento</div>
             </div>
         </div>
@@ -478,15 +479,15 @@
             <!-- ALINHAMENTO COM PARTIDO -->
             <div class="alignment-block">
                 <div class="alignment-title">Alinhamento com {{ deputy.siglaPartido }}</div>
-                {% if party_alignment is defined %}
+                {% if majority_alignment is defined %}
                 <div class="alignment-row">
                     <div class="alignment-label">
                         <span class="alignment-name">{{ deputy.siglaPartido }}</span>
-                        <span class="alignment-pct">{{ party_alignment }}%</span>
+                        <span class="alignment-pct">{{ majority_alignment }}%</span>
                     </div>
                     <div class="bar-track">
-                        <div class="bar-fill {% if party_alignment < 40 %}low{% elif party_alignment < 70 %}mid{% endif %}"
-                             style="width: {{ party_alignment }}%"></div>
+                        <div class="bar-fill {% if majority_alignment < 40 %}low{% elif majority_alignment < 70 %}mid{% endif %}"
+                             style="width: {{ majority_alignment }}%"></div>
                     </div>
                 </div>
                 {% else %}
