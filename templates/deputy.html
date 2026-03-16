@@ -128,17 +128,6 @@
             object-position: top center;
         }
 
-        /* Decidir depois se será necessário. */
-        /* .deputy-photo-wrap::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border: 1px solid var(--accent);
-            transform: translate(6px, 6px);
-            pointer-events: none;
-            z-index: 1;
-        } */
-
         .deputy-party-badge {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 0.65rem;
@@ -446,7 +435,7 @@
 
     <div class="content">
 
-        <!-- HISTÓRICO DE VOTAÇÕES -->
+        <!-- VOTING HISTORY -->
         <div class="main-col">
             <div class="section-header">
                 <span class="section-title">Histórico de votações</span>
@@ -476,7 +465,7 @@
         <!-- SIDEBAR -->
         <aside>
 
-            <!-- ALINHAMENTO COM MAIORIA DA CÂMARA -->
+            <!-- ALIGNMENT WITH CHAMBER MAJORITY -->
             <div class="alignment-block">
                 <div class="alignment-title">Votou conforme maioria da Câmara</div>
                 {% if majority_alignment is defined %}
@@ -495,7 +484,7 @@
                 {% endif %}
             </div>
 
-            <!-- TOP 5 MAIS ALINHADOS -->
+            <!-- TOP 5 MOST ALIGNED -->
             <div class="alignment-block">
                 <div class="alignment-title">Top 5 — votam mais igual</div>
                 {% if political_alignment is defined and political_alignment.most_aligned %}
@@ -515,7 +504,7 @@
                 {% endif %}
             </div>
 
-            <!-- TOP 5 MENOS ALINHADOS -->
+            <!-- TOP 5 LEAST ALIGNED -->
             <div class="alignment-block">
                 <div class="alignment-title">Top 5 — votam mais diferente</div>
                 {% if political_alignment is defined and political_alignment.least_aligned %}
@@ -535,9 +524,9 @@
                 {% endif %}
             </div>
 
-            <!-- PROJETOS APRESENTADOS -->
+            <!-- PROPOSITIONS PRESENTED -->
             <div class="section-header">
-                <span class="section-title">Projetos apresentados</span>
+                <span class="section-title">Últimos projetos apresentados:</span>
                 {% if propositions is defined %}
                 <span class="section-count">{{ propositions | length }}</span>
                 {% endif %}

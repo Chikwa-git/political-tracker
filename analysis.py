@@ -201,3 +201,37 @@ def get_political_alignment(congressman_id):
         "most_aligned": alignments[:5],     # top 5 who vote the same
         "least_aligned": alignments[-5:]    # top 5 who vote differently
     }
+
+
+def get_congressman_propositions(congressman_id):
+    """
+    Returns a summary of propositions authored by the congressman.
+    Classifies each as: aprovada, rejeitada, or em tramitação.
+    """
+
+    def classify(cod):
+        approved = [1140, 1141]
+        rejected = [1142, 1143]
+        if cod in approved:
+            return "aprovada"
+        elif cod in rejected:
+            return "rejeitada"
+        else:
+            return "em tramitação"
+
+    propositions = camara.get_propositions(congressman_id)
+
+    result = []
+    for prop in propositions[:20]:
+        details = camara.get_proposition(prop["id"])
+        status = details.get("statusProposicao", {})
+        cod = status.get("codSituacao")
+        result.append({
+            "id": prop["id"],
+            "tipo": prop.get("siglaTipo"),
+            "ementa": prop.get("ementa"),
+            "data": prop.get("dataApresentacao", "")[:10],
+            "situacao": classify(cod)
+        })
+
+    return result

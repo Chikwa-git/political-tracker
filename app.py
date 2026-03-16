@@ -87,23 +87,27 @@ def deputy():
             presence = database.get_cache(f"presence_{congressman_id}")
             majority_alignment = database.get_cache(f"majority_{congressman_id}")
             political_alignment = database.get_cache(f"political_{congressman_id}")
+            propositions = database.get_cache(f"propositions_{congressman_id}")
         else:
             history = analysis.get_congressman_history(congressman_id_int)
             presence = analysis.get_presence_rate(history)
             majority_alignment = analysis.get_majority_alignment(congressman_id_int)
             political_alignment = analysis.get_political_alignment(congressman_id_int)
+            propositions = analysis.get_congressman_propositions(congressman_id_int)
 
             database.save_cache(f"history_{congressman_id}", history)
             database.save_cache(f"presence_{congressman_id}", presence)
             database.save_cache(f"majority_{congressman_id}", majority_alignment)
             database.save_cache(f"political_{congressman_id}", political_alignment)
+            database.save_cache(f"propositions_{congressman_id}", propositions)
 
         return render_template("deputy.html", 
             deputy=deputy_flat,
             history=history,
             presence=presence,
             majority_alignment=majority_alignment,
-            political_alignment=political_alignment)
+            political_alignment=political_alignment,
+            propositions=propositions)
 
     return redirect(url_for("index"))
 
