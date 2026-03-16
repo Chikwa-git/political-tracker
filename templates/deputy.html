@@ -434,12 +434,12 @@
         <div class="deputy-stats">
             <div>
                 <div class="stat-value">{% if presence is defined %}{{ presence }}%{% else %}—{% endif %}</div>
-                <div class="stat-label">% Presença</div>
+                <div class="stat-label">% Presença em votações</div>
             </div>
             <div>
-                <div class="stat-value">{% if party_alignment is defined %}{{ party_alignment }}%{% else %}—{% endif %}
+                <div class="stat-value">{% if majority_alignment is defined %}{{ majority_alignment }}%{% else %}—{% endif %}
             </div>
-                <div class="stat-label">% Alinhamento</div>
+                <div class="stat-label">% Alinhamento com maioria da Câmara</div>
             </div>
         </div>
     </section>
@@ -476,13 +476,13 @@
         <!-- SIDEBAR -->
         <aside>
 
-            <!-- ALINHAMENTO COM PARTIDO -->
+            <!-- ALINHAMENTO COM MAIORIA DA CÂMARA -->
             <div class="alignment-block">
-                <div class="alignment-title">Alinhamento com {{ deputy.siglaPartido }}</div>
+                <div class="alignment-title">Votou conforme maioria da Câmara</div>
                 {% if majority_alignment is defined %}
                 <div class="alignment-row">
                     <div class="alignment-label">
-                        <span class="alignment-name">{{ deputy.siglaPartido }}</span>
+                        <span class="alignment-name">% de vezes que votou conforme maioria</span>
                         <span class="alignment-pct">{{ majority_alignment }}%</span>
                     </div>
                     <div class="bar-track">
