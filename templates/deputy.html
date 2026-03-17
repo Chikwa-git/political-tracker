@@ -535,9 +535,11 @@
             {% if propositions is defined and propositions %}
                 {% for prop in propositions %}
                 <div class="prop-item">
-                    <div class="prop-status {{ prop.status }}">{{ prop.status | capitalize }}</div>
+                    <div class="prop-status {{ prop.situacao | lower | replace(' ', '') | replace('ã', 'a') }}">
+                        {{ prop.situacao | capitalize }}
+                    </div>
                     <div class="prop-ementa">{{ prop.ementa }}</div>
-                    <div class="prop-tipo">{{ prop.siglaTipo }} · {{ prop.ano }}</div>
+                    <div class="prop-tipo">{{ prop.tipo }} · {{ prop.data }}</div>
                 </div>
                 {% endfor %}
             {% else %}
