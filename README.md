@@ -1,8 +1,8 @@
-# Radar Político
+# Political Tracker
 #### Video Demo: <URL HERE>
 #### Description:
 
-Radar Político is a web application that tracks and visualizes the behavior of Brazilian federal congressmen (Deputados Federais). It allows users to search for any member of the Chamber of Deputies, view their voting history, presence rate, alignment with the parliamentary majority, and the legislation they have authored. The project was built as the final project for CS50X and uses real, live data from the official Brazilian Chamber of Deputies open data API.
+Political Tracker is a web application that tracks and visualizes the behavior of Brazilian federal congressmen (Deputados Federais). It allows users to search for any member of the Chamber of Deputies, view their voting history, presence rate, alignment with the parliamentary majority, and the legislation they have authored. The project was built as the final project for CS50X and uses real, live data from the official Brazilian Chamber of Deputies open data API.
 
 ## Motivation
 
