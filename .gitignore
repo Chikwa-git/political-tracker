@@ -1,0 +1,24 @@
+# Environment variables
+.env
+
+# Cache database
+cache.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environment
+venv/
+env/
+
+# Django
+*.log
+db.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db

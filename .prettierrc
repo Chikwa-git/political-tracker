@@ -1,0 +1,13 @@
+cat > .prettierrc << 'EOF'
+{
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "html",
+        "printWidth": 999999
+      }
+    }
+  ]
+}
+EOF
